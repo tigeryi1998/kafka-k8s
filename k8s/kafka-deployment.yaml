@@ -18,8 +18,8 @@ spec:
       labels:
         app: kafka
     spec:
-      securityContext:
-        fsGroup: 1001
+      # securityContext:
+      #   fsGroup: 1001
       containers:
         - name: kafka
           image: apache/kafka:latest
