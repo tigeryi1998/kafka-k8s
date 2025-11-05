@@ -1,0 +1,15 @@
+# kafka-data-persistentvolumeclaim.yaml
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: kafka-data
+  labels:
+    app: kafka-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+

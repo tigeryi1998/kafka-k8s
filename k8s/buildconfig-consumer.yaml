@@ -1,0 +1,48 @@
+# buildconfig-consumer.yaml
+
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: kafka-consumer
+  labels:
+    app: kafka-consumer
+spec:
+  lookupPolicy:
+    local: false
+  tags:
+    - name: latest
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: kafka-consumer
+  labels:
+    app: kafka-consumer
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      name: kafka-consumer:latest
+  source:
+    type: Git
+    git:
+      uri: https://github.com/tigeryi1998/kafka-k8s
+    contextDir: kafka-consumer/
+    sourceSecret:
+      name: ds551 # Replace with your actual secret name if needed
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Containerfile
+  triggers:
+    - type: ConfigChange
+    - type: GitHub
+      github:
+        secret: kafka-consumer-github-webhook-secret
+    - type: Generic
+      generic:
+        secretReference:
+          name: kafka-consumer-generic-webhook-secret
+  runPolicy: Serial
+  successfulBuildsHistoryLimit: 5
+  failedBuildsHistoryLimit: 5

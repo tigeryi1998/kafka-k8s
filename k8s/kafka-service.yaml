@@ -1,0 +1,17 @@
+# kafka-service.yaml
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka
+  labels:
+    app: kafka
+spec:
+  ports:
+    - name: "9092"
+      port: 9092
+      targetPort: 9092
+      protocol: TCP
+  selector:
+    app: kafka
+  type: ClusterIP

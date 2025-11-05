@@ -1,0 +1,35 @@
+# producer-deployment.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-producer
+  labels:
+    app: kafka-producer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka-producer
+  template:
+    metadata:
+      labels:
+        app: kafka-producer
+    spec:
+      containers:
+        - name: kafka-producer
+          image: image-registry.openshift-image-registry.svc:5000/ds551-2025fall-cb9303/kafka-producer:latest
+          imagePullPolicy: Always
+          env:
+            - name: KAFKA_BROKER
+              value: kafka:9092
+            - name: KAFKA_TOPIC
+              value: covid_data
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "512Mi"
+            limits:
+              cpu: "500m"
+              memory: "1Gi"
+      restartPolicy: Always
