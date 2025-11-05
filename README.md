@@ -13,8 +13,8 @@ oc project
 
 # kafka pvc, deployment, svc
 oc apply -f k8s/kafka-data-persistentvolumeclaim.yaml
-oc apply -f k8s/kafka-deployment.yaml
 oc apply -f k8s/kafka-service.yaml
+oc apply -f k8s/kafka-deployment.yaml
 
 # build consumer producer image
 oc apply -f k8s/buildconfig-producer.yaml

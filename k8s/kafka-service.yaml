@@ -1,5 +1,6 @@
 # kafka-service.yaml
 
+# Broker service
 apiVersion: v1
 kind: Service
 metadata:
@@ -8,9 +9,29 @@ metadata:
     app: kafka
 spec:
   ports:
-    - name: "9092"
+    - name: broker
       port: 9092
       targetPort: 9092
+      protocol: TCP
+  selector:
+    app: kafka
+  type: ClusterIP
+
+--- 
+
+# Controller service
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-controller
+  labels:
+    app: kafka
+spec:
+  ports:
+    - name: controller
+      port: 9093
+      targetPort: 9093
       protocol: TCP
   selector:
     app: kafka
