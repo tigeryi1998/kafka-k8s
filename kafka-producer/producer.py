@@ -30,7 +30,7 @@ producer = KafkaProducer(
     value_serializer=lambda v: json.dumps(v).encode("utf-8")  # serialize Python dict to JSON bytes
 )
 
-def send_loop(url, interval=30):
+def send_loop(url, interval=60):
     """Continuously fetch data and send it to Kafka."""
     while True:
         data = fetch_data(url)
@@ -40,7 +40,7 @@ def send_loop(url, interval=30):
                 future = producer.send(KAFKA_TOPIC, data)
 
                 # Wait for Kafka to confirm the message is sent
-                result = future.get(timeout=10)  # blocking call to ensure delivery
+                result = future.get(timeout=15)  # blocking call to ensure delivery
                 producer.flush()  # optional: flush ensures all queued messages are sent
 
                 # Log successful send with timestamp and batch size
@@ -56,4 +56,4 @@ def send_loop(url, interval=30):
 
 if __name__ == "__main__":
     url = "https://disease.sh/v3/covid-19/countries"
-    send_loop(url, interval=30)
+    send_loop(url, interval=60)

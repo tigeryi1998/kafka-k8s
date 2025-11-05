@@ -46,19 +46,47 @@ After deployments are running, you can stream logs to verify activity.
 oc get pods
 
 # Replace <pod> with the Kafka pod name
-oc logs <kafka-pod> -f
+oc logs <kafka-pod> 
 
 # Find producer pod
 oc get pods | grep producer
 
 # Stream logs
-oc logs <producer-pod> -f
+oc logs <producer-pod> 
 
 # Find consumer pod
 oc get pods | grep consumer
 
 # Stream logs
-oc logs <consumer-pod> -f
+oc logs <consumer-pod> 
+```
+
+
+Scale Down Deployment
+
+```bash
+# Scale Kafka down to 0 replicas
+oc scale deployment kafka --replicas=0
+
+# Scale Producer down to 0 replicas
+oc scale deployment kafka-producer --replicas=0
+
+# Scale Consumer down to 0 replicas
+oc scale deployment kafka-consumer --replicas=0
+```
+
+
+Scale Up Deployment
+
+```bash
+# Scale Kafka down to 1 replicas
+oc scale deployment kafka --replicas=1
+
+# Scale Producer down to 1 replicas
+oc scale deployment kafka-producer --replicas=1
+
+# Scale Consumer down to 1 replicas
+oc scale deployment kafka-consumer --replicas=1
 ```
 
 
