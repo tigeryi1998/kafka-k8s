@@ -20,50 +20,114 @@ spec:
         - name: kafka
           image: apache/kafka:latest
           imagePullPolicy: Always
+
           env:
-            # Kafka binds inside the pod to all interfaces
+            ############################################################
+            # 🔊 NETWORK CONFIG
+            ############################################################
+
+            # LISTENERS = where Kafka actually LISTENS for traffic
+            # Bind broker (9092) + controller (9093) on all interfaces
+            # 0.0.0.0 means “bind to all interfaces” so Kafka can receive connections
             - name: KAFKA_LISTENERS
               value: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
-            # Advertised listener is the stable service name inside OpenShift
+
+            # ADVERTISED_LISTENERS = what clients should CONNECT TO
+            # Must be a resolvable DNS name inside Kubernetes
+            # Kubernetes DNS name: <service-name>.<namespace>.svc.cluster.local
             - name: KAFKA_ADVERTISED_LISTENERS
               value: PLAINTEXT://kafka.ds551-2025fall-cb9303.svc.cluster.local:9092
+            
+            # Listener names used below for broker <-> broker communication
             - name: KAFKA_INTER_BROKER_LISTENER_NAME
               value: PLAINTEXT
+            
+            # Listener for KRaft controller
             - name: KAFKA_CONTROLLER_LISTENER_NAMES
               value: CONTROLLER
+
+            ############################################################
+            # 🧠 KRaft CONFIG — SINGLE NODE, NO ZOOKEEPER
+            ############################################################
+            
+            # Used by KRaft to establish controller quorum
+            # Format: <node_id>@<controller-host>:<controller-port>
+            # Because we have only one controller, it references itself.
             - name: KAFKA_CONTROLLER_QUORUM_VOTERS
               value: 0@kafka-controller.ds551-2025fall-cb9303.svc.cluster.local:9093
+            
+            # Unique broker/controller identity ID in KRaft mode
             - name: KAFKA_NODE_ID
               value: "0"
+            
+            # This node has both roles (single-node KRaft)
             - name: KAFKA_PROCESS_ROLES
               value: controller,broker
-            # -----------------------------
-            # LOG DIRECTORY CHANGES
-            # -----------------------------
-            # Use emptyDir for ephemeral writable logs
+            
+            ############################################################
+            # 🗄️ LOG + STORAGE
+            ############################################################
+
+            # Notes:
+            # - OpenShift's filesystem may be read-only → must use /tmp
+            # - emptyDir is used (ephemeral) → data erased if pod restarts
+
+            # Kafka data + metadata directory
             - name: KAFKA_LOG_DIRS
               value: /tmp/kafka-logs
+
+            # Log4j must also write to a writable path
             - name: KAFKA_LOG4J_OPTS
-              value: "-Dkafka.logs.dir=/tmp/kafka-logs"  # changed from /opt/kafka/logs
+              value: "-Dkafka.logs.dir=/tmp/kafka-logs"
+            
+            # JVM logging configuration
             - name: KAFKA_OPTS
               value: "-Xlog:gc*:file=/tmp/kafka-logs/kafkaServer-gc.log:time,tags:filecount=10,filesize=100M"
+          
+          ############################################################
+          # 🔥 PORTS
+          ############################################################
           ports:
+            # Kafka broker port (primary client entry point)
+            # Kafka broker port (for producers/consumers + inter-broker traffic)
+            # ✅ Used by client applications inside the cluster (e.g. your producer/consumer)
+            # ✅ Must match Service port 9092
             - containerPort: 9092
               protocol: TCP
+            
+            # Kafka KRaft controller port (internal only)
+            # ⚠ INTERNAL ONLY — used by Kafka’s controller process
+            # ⚠ Does NOT need a Service because no external client ever connects here
+            # ✅ Optional to list — exposing it doesn't hurt, but usually unnecessary
+            - containerPort: 9093
+              protocol: TCP
+          
+          ############################################################
+          # 📁 STORAGE
+          ############################################################
           volumeMounts:
+            # Writable ephemeral storage for logs + metadata
             - name: kafka-data
-              mountPath: /tmp/kafka-logs   # Kafka logs written here
+              mountPath: /tmp/kafka-logs   
             - name: kafka-config
-              mountPath: /opt/kafka/config   # now writable
+              mountPath: /opt/kafka/config   
             - name: kafka-logs
               mountPath: /opt/kafka/logs
+          
+          ############################################################
+          # ⚙️ RESOURCES
+          ############################################################
           resources:
             requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
               cpu: "1"
               memory: "2Gi"
-            limits:
-              cpu: "2"
-              memory: "4Gi"
+          
+          ############################################################
+          # ✅ HEALTH CHECK
+          ############################################################
           livenessProbe:
             exec:
               command:
@@ -75,10 +139,16 @@ spec:
             periodSeconds: 10
             timeoutSeconds: 5
             failureThreshold: 5
+      
       restartPolicy: Always
+
+      ############################################################
+      # 📦 VOLUMES
+      ############################################################
       volumes:
+        # ephemeral storage for Kafka logs / metadata
         - name: kafka-data
-          emptyDir: {}  # ephemeral, avoids PVC / permission issues
+          emptyDir: {}  
         - name: kafka-config
           emptyDir: {}
         - name: kafka-logs
