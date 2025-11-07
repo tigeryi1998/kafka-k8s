@@ -73,14 +73,17 @@ spec:
             # - emptyDir is used (ephemeral) → data erased if pod restarts
 
             # Kafka data + metadata directory
+            # default /var/lib/kafka/data is read-only in OpenShift
             - name: KAFKA_LOG_DIRS
               value: /tmp/kafka-logs
 
             # Log4j must also write to a writable path
+            # default logs go to /opt/kafka/logs which is read-only in OpenShift
             - name: KAFKA_LOG4J_OPTS
               value: "-Dkafka.logs.dir=/tmp/kafka-logs"
             
             # JVM logging configuration
+            # Enable GC logging to a file in the writable /tmp directory
             - name: KAFKA_OPTS
               value: "-Xlog:gc*:file=/tmp/kafka-logs/kafkaServer-gc.log:time,tags:filecount=10,filesize=100M"
           
