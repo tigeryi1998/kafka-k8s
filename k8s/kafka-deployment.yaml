@@ -129,14 +129,16 @@ spec:
           # ✅ HEALTH CHECK
           ############################################################
           livenessProbe:
+            # tcpSocket:
+            #   port: 9092
             exec:
               command:
                 - /opt/kafka/bin/kafka-topics.sh
                 - --list
                 - --bootstrap-server
                 - kafka.ds551-2025fall-cb9303.svc.cluster.local:9092
-            initialDelaySeconds: 10
-            periodSeconds: 10
+            initialDelaySeconds: 15
+            periodSeconds: 20
             timeoutSeconds: 5
             failureThreshold: 5
       
