@@ -3,7 +3,7 @@
 services:
 
   kafka:
-    image: apache/kafka:latest
+    image: apache/kafka:4.1.0
     ports:
       - 9092:9092
     cpus: 1.0

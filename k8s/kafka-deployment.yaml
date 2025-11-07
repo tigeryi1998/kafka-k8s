@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: kafka
-          image: apache/kafka:latest
+          image: apache/kafka:4.1.0
           imagePullPolicy: Always
 
           env:
