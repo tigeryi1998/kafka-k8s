@@ -6,8 +6,7 @@ services:
     image: apache/kafka:4.1.0
     ports:
       - 9092:9092
-    cpus: 1.0
-    mem_limit: 2g
+      - 9093:9093
     healthcheck:
       test: ["CMD", "/opt/kafka/bin/kafka-topics.sh", "--list", "--bootstrap-server", "kafka:9092"]
       interval: 10s
